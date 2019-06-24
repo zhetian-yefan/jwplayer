@@ -57,6 +57,7 @@ export default function (container, api, model) {
         api.pause(settingsInteraction);
     };
     const close = () => {
+        model.set('displayShortcuts', false);
         removeClass(template, 'jw-open');     
         document.removeEventListener('click', documentClickHandler);
         container.focus();

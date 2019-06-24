@@ -78,6 +78,7 @@ export default function (container, model, api, onVisibility) {
         },
         close() {
             // removeClass(template, openClass);
+            model.set('displayInfo', false);
             document.removeEventListener('click', documentClickHandler);
             visible = false;
 

@@ -31,9 +31,16 @@ function createDomElement(html) {
 }
 
 export default class RightClick {
-    constructor(infoOverlay, shortcutsTooltip) {
-        this.infoOverlay = infoOverlay;
-        this.shortcutsTooltip = shortcutsTooltip;
+    constructor(showShortcuts) {
+        this.showShortcuts = showShortcuts;
+    }
+
+    setup(model, playerContainer, wrapperElement) {
+        this.wrapperElement = wrapperElement;
+        this.model = model;
+        this.mouseOverContext = false;
+        this.playerContainer = playerContainer;
+        this.ui = new UI(wrapperElement).on('longPress', this.rightClick, this);
     }
 
     buildArray() {
@@ -41,12 +48,20 @@ export default class RightClick {
         const majorMinorPatchPre = semverParts[0];
         const model = this.model;
         const edition = model.get('edition');
-        const poweredBy = model.get('localization').poweredBy;
+        const localization = model.get('localization');
+        const { poweredBy } = localization;
         const versionSpan = `<span class="jw-reset">JW Player ${majorMinorPatchPre}</span>`;
 
         const menu = {
             items: [{
-                type: 'info'
+                type: 'button',
+                title: localization.videoInfo,
+                button: {
+                    name: 'info-overlay',
+                    onclick: () => {
+                        model.set('displayInfo', !model.get('displayInfo'));
+                    }
+                }
             },
             {
                 title: isRtl(poweredBy) ? `${versionSpan} ${poweredBy}` : `${poweredBy} ${versionSpan}`,
@@ -67,9 +82,16 @@ export default class RightClick {
                 link: 'http://www.adobe.com/software/flash/about/'
             });
         }
-        if (this.shortcutsTooltip) {
+        if (this.showShortcuts) {
             menuItems.splice(menuItems.length - 1, 0, {
-                type: 'keyboardShortcuts'
+                type: 'button',
+                title: 'Keyboard Shortcuts',
+                button: {
+                    name: 'shortcuts',
+                    onclick: () => {
+                        model.set('displayShortcuts', !model.get('displayShortcuts'));
+                    }
+                }
             });
         }
 
@@ -129,7 +151,8 @@ export default class RightClick {
     }
 
     lazySetup() {
-        const html = rightclickTemplate(this.buildArray(), this.model.get('localization'));
+        const menu = this.buildArray();
+        const html = rightclickTemplate(menu, this.model.get('localization'));
         if (this.el) {
             if (this.html !== html) {
                 this.html = html;
@@ -156,26 +179,18 @@ export default class RightClick {
                 this.hideMenu();
             }
         };
-        this.infoOverlayHandler = () => {
-            // Open the info overlay if clicked, and hide the rightclick menu
-            this.mouseOverContext = false;
-            this.hideMenu();
-            this.infoOverlay.open();
-        };
-        this.shortcutsTooltipHandler = () => {
-            // Open the info overlay if clicked, and hide the rightclick menu
-            this.mouseOverContext = false;
-            this.hideMenu();
-            this.shortcutsTooltip.open();
-        };
-    }
 
-    setup(_model, _playerContainer, _wrapperElement) {
-        this.wrapperElement = _wrapperElement;
-        this.model = _model;
-        this.mouseOverContext = false;
-        this.playerContainer = _playerContainer;
-        this.ui = new UI(_wrapperElement).on('longPress', this.rightClick, this);
+        this.buttons = menu.items.map(({ button }) => {
+            if (button) {
+                const onclick = button.onclick;
+                button.handler = () => {
+                    this.mouseOverContext = false;
+                    this.hideMenu();
+                    onclick();
+                };
+                return button;
+            }
+        }).filter(i => !!i);
     }
 
     addHideMenuHandlers() {
@@ -191,11 +206,10 @@ export default class RightClick {
             this.el.addEventListener('mouseover', this.overHandler);
             this.el.addEventListener('mouseout', this.outHandler);
         }
-        this.el.querySelector('.jw-info-overlay-item').addEventListener('click', this.infoOverlayHandler);
 
-        if (this.shortcutsTooltip) {
-            this.el.querySelector('.jw-shortcuts-item').addEventListener('click', this.shortcutsTooltipHandler);
-        }
+        this.buttons.forEach((button) => {
+            this.el.querySelector(`.jw-${button.name}-item`).addEventListener('click', button.handler);
+        });
     }
 
     removeHideMenuHandlers() {
@@ -204,12 +218,11 @@ export default class RightClick {
             this.wrapperElement.removeEventListener('touchstart', this.hideMenuHandler);
         }
         if (this.el) {
-            this.el.querySelector('.jw-info-overlay-item').removeEventListener('click', this.infoOverlayHandler);
             this.el.removeEventListener('mouseover', this.overHandler);
             this.el.removeEventListener('mouseout', this.outHandler);
-            if (this.shortcutsTooltip) {
-                this.el.querySelector('.jw-shortcuts-item').removeEventListener('click', this.shortcutsTooltipHandler);
-            }
+            this.buttons.forEach((button) => {
+                this.el.querySelector(`.jw-${button.name}-item`).removeEventListener('click', button.handler);
+            });
         }
         document.removeEventListener('click', this.hideMenuHandler);
         document.removeEventListener('touchstart', this.hideMenuHandler);

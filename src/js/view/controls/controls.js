@@ -126,7 +126,7 @@ export default class Controls extends Events {
         if (!OS.mobile) {
             this.shortcutsTooltip = new ShortcutsTooltip(this.wrapperElement, api, model);
         }
-        this.rightClickMenu = new RightClick(this.infoOverlay, this.shortcutsTooltip);
+        this.rightClickMenu = new RightClick(!!this.shortcutsTooltip);
         if (touchMode) {
             addClass(this.playerContainer, 'jw-flag-touch');
             this.rightClickMenu.setup(model, this.playerContainer, this.wrapperElement);
@@ -139,6 +139,22 @@ export default class Controls extends Events {
                 }
             }, this);
         }
+
+        model.on('change:displayInfo', (m, displayInfo) => {
+            if (displayInfo) {
+                this.infoOverlay.open();
+            } else if (displayInfo === false) {
+                this.infoOverlay.close();
+            }
+        });
+
+        model.on('change:displayShortcuts', (m, displayShortcuts) => {
+            if (displayShortcuts) {
+                this.shortcutsTooltip.open();
+            } else if (displayShortcuts === false) {
+                this.shortcutsTooltip.close();
+            }
+        });
 
         // Floating Close Button
         let floatingConfig = model.get('floating');
