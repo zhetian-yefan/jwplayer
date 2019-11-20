@@ -38,8 +38,7 @@ export function isTizen() {
 
 export function isChrome() {
     return userAgentMatch(/\s(?:(?:Headless)?Chrome|CriOS)\//i) && !isEdge() &&
-        !userAgentMatch(/UCBrowser/i) &&
-        !isTizen();
+        !userAgentMatch(/UCBrowser/i);
 }
 
 export function isIE() {
@@ -47,8 +46,7 @@ export function isIE() {
 }
 
 export function isSafari() {
-    return (userAgentMatch(/safari/i) && !userAgentMatch(/(?:Chrome|CriOS|chromium|android|phantom)/i)) ||
-        isTizen();
+    return userAgentMatch(/safari/i) && !userAgentMatch(/(?:Chrome|CriOS|chromium|android|phantom)/i);
 }
 
 export function isIOS() {
