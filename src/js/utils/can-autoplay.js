@@ -58,6 +58,9 @@ export const AUTOPLAY_DISABLED = 'autoplayDisabled';
 const autoplayPagePromises = {};
 
 export function canAutoplay(mediaPool, { cancelable, muted = false, allowMuted = false, timeout = 10000 }) {
+    if (__HEADLESS__) {
+        return Promise.resolve();
+    }
     const element = mediaPool.getTestElement();
     const key = muted ? 'muted' : `${allowMuted}`;
 

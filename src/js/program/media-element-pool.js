@@ -4,11 +4,13 @@ export default function MediaElementPool() {
     const maxPrimedTags = MEDIA_POOL_SIZE;
     const elements = [];
     const pool = [];
-    for (let i = 0; i < maxPrimedTags; i++) {
-        const mediaElement = createMediaElement();
-        elements.push(mediaElement);
-        pool.push(mediaElement);
-        primeMediaElementForPlayback(mediaElement);
+    if (!__HEADLESS__) {
+        for (let i = 0; i < maxPrimedTags; i++) {
+            const mediaElement = createMediaElement();
+            elements.push(mediaElement);
+            pool.push(mediaElement);
+            primeMediaElementForPlayback(mediaElement);
+        }
     }
 
     // Reserve an element exclusively for ads

@@ -26,13 +26,15 @@ const userAgent = navigator.userAgent;
 function supportsPassive() {
     let passiveOptionRead = false;
 
-    try {
-        const opts = Object.defineProperty({}, 'passive', {
-            get: () => (passiveOptionRead = true)
-        });
-        window.addEventListener('testPassive', null, opts);
-        window.removeEventListener('testPassive', null, opts);
-    } catch (e) {/* noop */}
+    if (!__HEADLESS__) {
+        try {
+            const opts = Object.defineProperty({}, 'passive', {
+                get: () => (passiveOptionRead = true)
+            });
+            window.addEventListener('testPassive', null, opts);
+            window.removeEventListener('testPassive', null, opts);
+        } catch (e) {/* noop */}
+    }
 
     return passiveOptionRead;
 }

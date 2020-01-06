@@ -29,7 +29,11 @@ const jwplayer = function(query) {
     } else if (typeof query === 'string') {
         player = playerById(query);
         if (!player) {
-            domElement = document.getElementById(query);
+            if (__HEADLESS__) {
+                domElement = { id: query };
+            } else {
+                domElement = document.getElementById(query);
+            }
         }
     } else if (typeof query === 'number') {
         player = instances[query];

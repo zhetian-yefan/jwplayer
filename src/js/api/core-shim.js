@@ -98,15 +98,17 @@ Object.assign(CoreShim.prototype, {
 
         // Create/get click-to-play media element, and call .load() to unblock user-gesture to play requirement
         let mediaPool = MediaElementPool();
-        if (!model.get('backgroundLoading')) {
-            mediaPool = SharedMediaPool(mediaPool.getPrimedElement(), mediaPool);
-        }
+        if (!__HEADLESS__) {
+            if (!model.get('backgroundLoading')) {
+                mediaPool = SharedMediaPool(mediaPool.getPrimedElement(), mediaPool);
+            }
 
-        const primeUi = new UI(getElementWindow(this.originalContainer)).once('gesture', () => {
-            mediaPool.prime();
-            this.preload();
-            primeUi.destroy();
-        });
+            const primeUi = new UI(getElementWindow(this.originalContainer)).once('gesture', () => {
+                mediaPool.prime();
+                this.preload();
+                primeUi.destroy();
+            });
+        }
 
         model.on('change:errorEvent', logError);
 
